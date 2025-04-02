@@ -1,57 +1,4 @@
-// const express = require('express');
-// const Post = require('../models/Post');
-// const authMiddleware = require('../middlewares/authMiddleware');
 
-// const router = express.Router();
-// router.post('/', authMiddleware, async (req, res) => {
-//     try {
-//         const { title, content } = req.body;
-//         const newPost = new Post({ title, content, author: req.user.id });
-//         await newPost.save();
-//         res.status(201).json(newPost);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// });
-
-// // Like/Dislike a Post
-// router.put('/:id/like', authMiddleware, async (req, res) => {
-//     try {
-//         const post = await Post.findById(req.params.id);
-//         if (!post) return res.status(404).json({ message: 'Post not found' });
-        
-//         if (post.likes.includes(req.user.id)) {
-//             post.likes.pull(req.user.id);
-//         } else {
-//             post.likes.push(req.user.id);
-//             post.dislikes.pull(req.user.id);
-//         }
-//         await post.save();
-//         res.json(post);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// });
-
-// router.put('/:id/dislike', authMiddleware, async (req, res) => {
-//     try {
-//         const post = await Post.findById(req.params.id);
-//         if (!post) return res.status(404).json({ message: 'Post not found' });
-        
-//         if (post.dislikes.includes(req.user.id)) {
-//             post.dislikes.pull(req.user.id);
-//         } else {
-//             post.dislikes.push(req.user.id);
-//             post.likes.pull(req.user.id);
-//         }
-//         await post.save();
-//         res.json(post);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// });
-
-// module.exports = router;
 
 
 const express = require('express');
@@ -124,6 +71,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+
 // Like a Post
 router.put('/:id/like', authMiddleware, async (req, res) => {
     try {
@@ -137,7 +85,11 @@ router.put('/:id/like', authMiddleware, async (req, res) => {
             post.dislikes.pull(req.user.id);
         }
         await post.save();
-        res.json(post);
+        res.json({ 
+            message: 'Like updated successfully', 
+            likesCount: post.likes.length, 
+            dislikesCount: post.dislikes.length 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -156,13 +108,17 @@ router.put('/:id/dislike', authMiddleware, async (req, res) => {
             post.likes.pull(req.user.id);
         }
         await post.save();
-        res.json(post);
+        res.json({ 
+            message: 'Dislike updated successfully', 
+            likesCount: post.likes.length, 
+            dislikesCount: post.dislikes.length 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Check if a user has liked or disliked a Post
+// Check if a user has liked or disliked a Post & return counts
 router.get('/:id/status', authMiddleware, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -170,11 +126,15 @@ router.get('/:id/status', authMiddleware, async (req, res) => {
 
         const liked = post.likes.includes(req.user.id);
         const disliked = post.dislikes.includes(req.user.id);
-        res.json({ liked, disliked });
+        res.json({ 
+            liked, 
+            disliked, 
+            likesCount: post.likes.length, 
+            dislikesCount: post.dislikes.length 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 module.exports = router;
-
